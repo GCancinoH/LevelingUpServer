@@ -17,15 +17,18 @@ import json
 from datetime import datetime
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
 
 load_dotenv()
 
 app = Flask(__name__)
 
+# Keys
+zai_key = os.environ["ZAI_KEY"]
+opn_key = os.environ["OPN_KEY"]
+
 # ── Gemini setup ──────────────────────────────────────────────────────────────
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = genai.Client(api_key=os.environ["GMN_KEY"])
 
 
 # ── Health check ──────────────────────────────────────────────────────────────
@@ -79,13 +82,14 @@ def weekly_report():
             identity_statement, roles, standards, week_entries
         )
 
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                temperature     = 0.7,
-                max_output_tokens = 1024,
-                response_mime_type = "application/json"
-            )
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt,
+            config={
+                "temperature": 0.7,
+                "max_output_tokens": 1024,
+                "response_mime_type": "application/json"
+            }
         )
 
         raw = response.text.strip()
